@@ -3,936 +3,989 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drill Stock Control System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap');
+  :root {
+    --black:  #080A0C;
+    --panel:  #0E1215;
+    --border: #1E2830;
+    --dim:    #1A2530;
+    --blue:       #3B8BEB;
+    --blue-dim:   rgba(59,139,235,0.1);
+    --orange:     #F5A623;
+    --orange-dim: rgba(245,166,35,0.1);
+    --green:      #00C896;
+    --green-dim:  rgba(0,200,150,0.1);
+    --purple:     #A855F7;
+    --purple-dim: rgba(168,85,247,0.1);
+    --cyan:       #00C8D4;
+    --red:        #F0455A;
+    --text:       #C8D4DC;
+    --text-dim:   #607080;
+    --text-bright: #EDF4F8;
+    --mono: 'Share Tech Mono', monospace;
+    --head: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+  }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #16161f;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --blue: #5b7cfa;
-    --blue-dim: rgba(91,124,250,0.12);
-    --blue-glow: rgba(91,124,250,0.25);
-    --green: #22c55e;
-    --green-dim: rgba(34,197,94,0.1);
-    --orange: #f59e0b;
-    --orange-dim: rgba(245,158,11,0.1);
-    --purple: #a855f7;
-    --purple-dim: rgba(168,85,247,0.1);
-    --red: #ef4444;
-    --red-dim: rgba(239,68,68,0.1);
-    --cyan: #00d4ff;
-    --cyan-dim: rgba(0,212,255,0.1);
-    --text: #f1f5f9;
-    --muted: #64748b;
-    --muted2: #94a3b8;
-    --font-display: 'Sora', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+  html { scroll-behavior: smooth; }
 
   body {
-    font-family: var(--font-display);
-    background: var(--bg);
+    background: var(--black);
     color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-
-  .readme {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 3rem 2rem 6rem;
-  }
-
-  /* ─── HERO ─── */
-  .hero {
-    text-align: center;
-    padding: 3rem 0 2rem;
-    position: relative;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 50%; transform: translateX(-50%);
-    width: 600px; height: 300px;
-    background: radial-gradient(ellipse at center top, rgba(91,124,250,0.15) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-logo {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-    display: block;
-  }
-
-  .hero-title {
-    font-size: 2.4rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-    color: var(--muted2);
+    font-family: var(--body);
     font-weight: 300;
-    letter-spacing: 0.02em;
-    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    overflow-x: hidden;
   }
 
-  /* ─── BADGES ─── */
-  .badges {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none; z-index: 9999;
   }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(8,10,12,0.94); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border); padding: 0 40px;
+  }
+
+  .nav-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; gap: 32px; height: 48px;
+  }
+
+  .nav-logo {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--blue); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-right: auto;
+  }
+
+  .nav-links { display: flex; gap: 24px; list-style: none; }
+
+  .nav-links a {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.15em; color: var(--text-dim);
+    text-decoration: none; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--blue); }
+
+  .nav-status {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--green); letter-spacing: 0.1em;
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 2s ease-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%   { box-shadow: 0 0 0 0 rgba(0,200,150,0.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(0,200,150,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,200,150,0); }
+  }
+
+  @media (max-width:700px) { .nav-links { display:none; } nav { padding: 0 20px; } }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 110px 40px 50px;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--orange), var(--blue));
+    background-size: 300% 100%;
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 300% 0%; }
+  }
+
+  .header-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 40px; align-items: center;
+  }
+
+  .header-eyebrow {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--blue); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .header-eyebrow::before {
+    content: ''; display: inline-block;
+    width: 24px; height: 1px; background: var(--blue);
+  }
+
+  h1 {
+    font-family: var(--head); font-weight: 900;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 0.95; color: var(--text-bright);
+    letter-spacing: -0.02em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 span { color: var(--blue); }
+
+  .header-sub {
+    font-family: var(--head); font-weight: 300;
+    font-size: 18px; letter-spacing: 0.04em;
+    color: var(--text-dim); margin-bottom: 28px;
+  }
+
+  .header-badges { display: flex; flex-wrap: wrap; gap: 8px; }
 
   .badge {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 0.3rem 0.75rem;
-    border-radius: 100px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    border: 1px solid;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.1em; padding: 5px 10px;
+    border: 1px solid; text-transform: uppercase;
   }
 
-  .badge-blue   { background: var(--blue-dim);   color: var(--blue);   border-color: rgba(91,124,250,0.3); }
-  .badge-green  { background: var(--green-dim);  color: var(--green);  border-color: rgba(34,197,94,0.3); }
-  .badge-orange { background: var(--orange-dim); color: var(--orange); border-color: rgba(245,158,11,0.3); }
-  .badge-purple { background: var(--purple-dim); color: var(--purple); border-color: rgba(168,85,247,0.3); }
-  .badge-cyan   { background: var(--cyan-dim);   color: var(--cyan);   border-color: rgba(0,212,255,0.3); }
-  .badge-red    { background: var(--red-dim);    color: var(--red);    border-color: rgba(239,68,68,0.3); }
+  .b-blue   { border-color: var(--blue);   color: var(--blue);   background: var(--blue-dim); }
+  .b-orange { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+  .b-green  { border-color: var(--green);  color: var(--green);  background: var(--green-dim); }
+  .b-purple { border-color: var(--purple); color: var(--purple); background: var(--purple-dim); }
+  .b-cyan   { border-color: var(--cyan);   color: var(--cyan);   background: rgba(0,200,212,0.08); }
 
-  /* ─── DIVIDER ─── */
-  .divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border2), transparent);
-    margin: 2.5rem 0;
+  .live-indicator {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
   }
 
-  /* ─── SECTION LABEL ─── */
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--blue);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .live-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 0 0 rgba(59,139,235,0.6);
+    animation: pulse-live 2s ease-out infinite;
   }
 
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
+  @keyframes pulse-live {
+    0%   { box-shadow: 0 0 0 0 rgba(59,139,235,0.6); }
+    70%  { box-shadow: 0 0 0 14px rgba(59,139,235,0); }
+    100% { box-shadow: 0 0 0 0 rgba(59,139,235,0); }
   }
 
-  .section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.25rem;
-    color: var(--text);
+  .live-text {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.2em; color: var(--blue);
+    writing-mode: vertical-rl; text-transform: uppercase;
   }
 
-  /* ─── FEATURE GRID ─── */
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
+  /* ── STAT BAR ── */
+  .stat-bar { background: var(--dim); border-bottom: 1px solid var(--border); }
+
+  .stat-bar-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr);
   }
 
-  .feature-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
+  .stat-item {
+    padding: 28px 32px;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
   }
 
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
+  .stat-item:last-child { border-right: none; }
+  .stat-item:hover { background: var(--panel); }
+
+  .stat-val {
+    font-family: var(--head); font-weight: 900;
+    font-size: 42px; line-height: 1;
+    color: var(--text-bright); margin-bottom: 4px;
   }
 
-  .feature-card.blue::before   { background: var(--blue); }
-  .feature-card.green::before  { background: var(--green); }
-  .feature-card.orange::before { background: var(--orange); }
-  .feature-card.purple::before { background: var(--purple); }
-  .feature-card.red::before    { background: var(--red); }
-  .feature-card.cyan::before   { background: var(--cyan); }
-
-  .feature-card:hover { border-color: var(--border2); }
-
-  .feature-icon {
-    font-size: 1.4rem;
-    margin-bottom: 0.75rem;
-    display: block;
-  }
-
-  .feature-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-    color: var(--text);
-  }
-
-  .feature-desc {
-    font-size: 0.8rem;
-    color: var(--muted2);
-    line-height: 1.6;
-  }
-
-  /* ─── ROLE TABLE ─── */
-  .role-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .role-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-  }
-
-  .role-icon { font-size: 1.1rem; margin-bottom: 0.5rem; display: block; }
-
-  .role-name {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-  }
-
-  .role-name.blue   { color: var(--blue); }
-  .role-name.green  { color: var(--green); }
-  .role-name.orange { color: var(--orange); }
-  .role-name.purple { color: var(--purple); }
-
-  .role-items {
-    list-style: none;
-    font-size: 0.75rem;
-    color: var(--muted2);
-    line-height: 1.8;
-  }
-
-  .role-items li::before {
-    content: '›  ';
-    color: var(--muted);
-  }
-
-  /* ─── TECH STACK ─── */
-  .tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .tech-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.875rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .tech-emoji { font-size: 1rem; }
-
-  .tech-info { display: flex; flex-direction: column; }
-
-  .tech-name {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .tech-use {
-    font-size: 0.68rem;
-    color: var(--muted);
-  }
-
-  /* ─── CODE BLOCK ─── */
-  .code-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .code-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .code-title {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--muted2);
-  }
-
-  .code-dots { display: flex; gap: 5px; }
-
-  .code-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-
-  .dot-red    { background: #ef4444; }
-  .dot-yellow { background: #f59e0b; }
-  .dot-green  { background: #22c55e; }
-
-  .code-body {
-    padding: 1rem 1.25rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    line-height: 1.8;
-    color: var(--muted2);
-    overflow-x: auto;
-  }
-
-  .code-comment { color: var(--muted); }
-  .code-keyword { color: var(--blue); }
-  .code-string  { color: var(--green); }
-  .code-func    { color: var(--orange); }
-  .code-var     { color: var(--purple); }
-  .code-value   { color: var(--cyan); }
-
-  /* ─── FLOW STEPS ─── */
-  .flow-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .flow-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 0.875rem 1.25rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-
-  .step-num {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--blue);
-    background: var(--blue-dim);
-    border: 1px solid rgba(91,124,250,0.25);
-    border-radius: 6px;
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .step-content { flex: 1; }
-
-  .step-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.15rem;
-  }
-
-  .step-desc {
-    font-size: 0.75rem;
-    color: var(--muted2);
-  }
-
-  /* ─── DIRECTORY TREE ─── */
-  .tree {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    line-height: 2;
-    color: var(--muted2);
-  }
-
-  .tree-dir  { color: var(--blue); font-weight: 700; }
-  .tree-file { color: var(--muted2); }
-  .tree-comment { color: var(--muted); }
-
-  /* ─── STAT ROW ─── */
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-  }
-
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: var(--font-mono);
-    font-size: 1.5rem;
-    font-weight: 700;
-    display: block;
-    margin-bottom: 0.25rem;
-  }
+  .stat-val.blue   { color: var(--blue); }
+  .stat-val.orange { color: var(--orange); }
+  .stat-val.green  { color: var(--green); }
+  .stat-val.purple { color: var(--purple); }
 
   .stat-label {
-    font-size: 0.7rem;
-    color: var(--muted);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.15em; color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
 
-  /* ─── SCREENSHOT MOCKUP ─── */
-  .mockup-frame {
-    background: var(--surface);
+  /* ── MAIN ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 0 40px 80px; }
+
+  section {
+    padding: 64px 0; border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-tag {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.2em; color: var(--orange);
+    text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-tag::before {
+    content: ''; display: inline-block;
+    width: 16px; height: 1px; background: var(--orange);
+  }
+
+  h2 {
+    font-family: var(--head); font-weight: 900;
+    font-size: clamp(28px, 4vw, 44px);
+    color: var(--text-bright); text-transform: uppercase;
+    letter-spacing: -0.01em; line-height: 1; margin-bottom: 24px;
+  }
+
+  h3 {
+    font-family: var(--head); font-weight: 700; font-size: 20px;
+    color: var(--text-bright); letter-spacing: 0.02em;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+
+  p { margin-bottom: 16px; color: var(--text); font-size: 15px; }
+
+  code {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--orange); background: var(--orange-dim);
+    padding: 2px 6px;
+  }
+
+  /* ── UI MOCKUP ── */
+  .mockup {
     border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
+    background: var(--panel); margin: 32px 0;
   }
 
   .mockup-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    background: var(--dim); border-bottom: 1px solid var(--border);
+    padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .mb-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .mb-title {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-dim); margin-left: 8px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  .mockup-body {
+    display: grid; grid-template-columns: 200px 1fr;
+    min-height: 240px;
+  }
+
+  .sidebar {
+    background: #080B10; border-right: 1px solid var(--border);
+    padding: 16px 0; display: flex; flex-direction: column;
+  }
+
+  .sb-user {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--blue); padding: 0 16px 12px;
     border-bottom: 1px solid var(--border);
-    background: var(--surface2);
+    margin-bottom: 8px; letter-spacing: 0.08em;
   }
 
-  .mockup-inner {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    min-height: 220px;
+  .sb-section {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--text-dim); letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 8px 16px 4px;
   }
 
-  .mockup-sidebar {
-    background: #0d0d1a;
-    border-right: 1px solid var(--border);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+  .sb-item {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-dim); padding: 6px 16px;
+    display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s;
   }
 
-  .mockup-nav-item {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    padding: 0.4rem 0.6rem;
-    border-radius: 6px;
-    color: var(--muted2);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .mockup-nav-item.active {
+  .sb-item.active {
     background: var(--blue-dim);
     color: var(--blue);
-    border: 1px solid rgba(91,124,250,0.2);
+    border-left: 2px solid var(--blue);
   }
 
-  .mockup-nav-sep {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    color: var(--muted);
-    letter-spacing: 0.15em;
+  .sb-item.sub { padding-left: 32px; font-size: 9px; }
+
+  .content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  }
+
+  .kpi {
+    background: var(--dim); border: 1px solid var(--border);
+    border-left: 3px solid; padding: 10px;
+  }
+
+  .kpi-val {
+    font-family: var(--head); font-weight: 900;
+    font-size: 22px; line-height: 1; margin-bottom: 2px;
+  }
+
+  .kpi-label {
+    font-family: var(--mono); font-size: 8px;
+    color: var(--text-dim); letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 0.5rem 0.4rem 0.2rem;
   }
 
-  .mockup-content {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
+  .stock-table { border: 1px solid var(--border); }
 
-  .mockup-cards {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0.4rem;
-  }
-
-  .mockup-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.5rem;
-    border-left: 3px solid;
-  }
-
-  .mockup-card-num {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-
-  .mockup-card-label {
-    font-size: 0.55rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .mockup-table-header {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    gap: 0.5rem;
-    padding: 0.4rem 0;
+  .st-header {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    background: var(--dim); padding: 8px 10px;
     border-bottom: 1px solid var(--border);
   }
 
-  .mockup-th {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    color: var(--muted);
+  .st-th {
+    font-family: var(--mono); font-size: 8px;
+    color: var(--text-dim); letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
   }
 
-  .mockup-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    gap: 0.5rem;
-    padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+  .st-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(30,40,48,0.4);
   }
 
-  .mockup-td {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--muted2);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .st-row:last-child { border-bottom: none; }
+
+  .st-td {
+    font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
   .pill {
-    font-size: 0.5rem;
-    padding: 1px 6px;
-    border-radius: 100px;
-    font-weight: 700;
+    font-family: var(--mono); font-size: 8px; font-weight: 400;
+    padding: 2px 7px; border: 1px solid; display: inline-block;
   }
 
-  .pill-green  { background: var(--green-dim);  color: var(--green); }
-  .pill-orange { background: var(--orange-dim); color: var(--orange); }
-  .pill-red    { background: var(--red-dim);    color: var(--red); }
+  .pill-ok  { color: var(--green); border-color: rgba(0,200,150,0.4); background: var(--green-dim); }
+  .pill-low { color: var(--red);   border-color: rgba(240,69,90,0.4); background: rgba(240,69,90,0.08); }
+  .pill-wait{ color: var(--orange);border-color: rgba(245,166,35,0.4); background: var(--orange-dim); }
 
-  /* ─── FOOTER ─── */
-  .footer {
-    text-align: center;
-    padding: 2rem 0 0;
+  /* ── APPROVAL FLOW ── */
+  .pipeline {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 32px 0; position: relative;
   }
 
-  .footer-text {
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    letter-spacing: 0.05em;
+  .pipeline::before {
+    content: '';
+    position: absolute; left: 27px; top: 28px; bottom: 28px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--blue) 0%, var(--orange) 100%);
+    opacity: 0.35;
   }
 
-  .highlight { color: var(--blue); }
+  .pipeline-step {
+    display: flex; align-items: flex-start;
+    gap: 20px; padding: 20px 0; position: relative;
+  }
+
+  .step-num {
+    width: 56px; height: 56px;
+    border: 2px solid var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 18px;
+    color: var(--blue); background: var(--panel);
+    flex-shrink: 0; position: relative; z-index: 1;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .pipeline-step:hover .step-num { background: var(--blue); color: var(--black); }
+
+  .step-body { padding-top: 6px; }
+
+  .step-title {
+    font-family: var(--head); font-weight: 700; font-size: 18px;
+    color: var(--text-bright); text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 4px;
+  }
+
+  .step-desc { font-size: 14px; color: var(--text-dim); }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; background: var(--border); margin: 32px 0;
+  }
+
+  @media (max-width:600px) { .features-grid { grid-template-columns: 1fr; } }
+
+  .feature-card { background: var(--panel); padding: 28px; transition: background 0.2s; }
+  .feature-card:hover { background: var(--dim); }
+  .feature-icon { font-size: 22px; margin-bottom: 12px; }
+
+  /* ── ROLES ── */
+  .roles-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; background: var(--border); margin: 32px 0;
+  }
+
+  @media (max-width:600px) { .roles-grid { grid-template-columns: 1fr; } }
+
+  .role-card { background: var(--panel); padding: 28px; transition: background 0.2s; }
+  .role-card:hover { background: var(--dim); }
+
+  .role-tag {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 4px 10px; border: 1px solid;
+    display: inline-block; margin-bottom: 14px;
+  }
+
+  .role-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+  .role-list li {
+    font-size: 13px; color: var(--text-dim);
+    padding-left: 18px; position: relative; line-height: 1.5;
+  }
+
+  .role-list li::before { content: '›'; position: absolute; left: 0; color: var(--text-dim); }
+
+  /* ── ARCH ── */
+  pre.tree {
+    background: var(--panel); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    padding: 20px 24px; font-family: var(--mono);
+    font-size: 13px; overflow-x: auto; line-height: 1.8; margin: 20px 0;
+    color: var(--text-dim);
+  }
+
+  .t-dir  { color: var(--blue); }
+  .t-key  { color: var(--orange); }
+  .t-file { color: var(--text-dim); }
+  .t-cmt  { color: #2A3F55; font-style: italic; }
+
+  /* ── TECH ── */
+  .tech-list {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; background: var(--border); margin: 24px 0;
+  }
+
+  .tech-item {
+    background: var(--panel); padding: 16px 20px;
+    display: flex; justify-content: space-between;
+    align-items: center; transition: background 0.2s;
+  }
+
+  .tech-item:hover { background: var(--dim); }
+
+  .tech-cat {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  .tech-name {
+    font-family: var(--head); font-weight: 600; font-size: 16px;
+    color: var(--blue); text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  /* ── IMPACT ── */
+  .impact-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; background: var(--border); margin: 32px 0;
+  }
+
+  @media (max-width:600px) { .impact-grid { grid-template-columns: 1fr; } }
+
+  .impact-cell { background: var(--panel); padding: 24px 28px; }
+
+  .impact-header {
+    background: var(--dim);
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.15em; color: var(--text-dim);
+    text-transform: uppercase;
+    padding: 12px 28px;
+  }
+
+  .impact-before {
+    color: var(--text-dim); font-size: 14px;
+    text-decoration: line-through;
+    text-decoration-color: rgba(240,69,90,0.5);
+  }
+
+  .impact-after {
+    color: var(--green); font-family: var(--head);
+    font-weight: 700; font-size: 20px;
+    letter-spacing: 0.02em; display: block; margin-top: 4px;
+  }
+
+  .impact-label {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-dim); margin-top: 8px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--panel); border-top: 1px solid var(--border);
+    padding: 48px 40px; text-align: center;
+  }
+
+  .footer-inner { max-width: 1100px; margin: 0 auto; }
+
+  .footer-title {
+    font-family: var(--head); font-weight: 900; font-size: 36px;
+    color: var(--text-bright); text-transform: uppercase;
+    letter-spacing: -0.01em; margin-bottom: 8px;
+  }
+
+  .footer-sub {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 32px;
+  }
+
+  .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 32px; }
+
+  .footer-links a {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.15em; color: var(--text-dim);
+    text-decoration: none; text-transform: uppercase;
+    border-bottom: 1px solid var(--border); padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--blue); border-color: var(--blue); }
+
+  .footer-copy { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; }
+
+  @media (max-width:700px) {
+    main { padding: 0 20px 60px; }
+    header { padding: 80px 20px 40px; }
+    .header-grid { grid-template-columns: 1fr; }
+    .stat-bar-inner { grid-template-columns: repeat(2,1fr); }
+    .mockup-body { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .kpi-row { grid-template-columns: repeat(3,1fr); }
+  }
 </style>
 </head>
 <body>
-<div class="readme">
 
-  <!-- HERO -->
-  <div class="hero">
-    <span class="hero-logo">⚙️</span>
-    <h1 class="hero-title">Drill Stock Control System</h1>
-    <p class="hero-subtitle">AI-powered inventory management with facial recognition, multi-tier approvals & real-time sync</p>
-
-    <div class="badges">
-      <span class="badge badge-blue">Python 3.x</span>
-      <span class="badge badge-blue">PyQt5</span>
-      <span class="badge badge-orange">OpenCV</span>
-      <span class="badge badge-green">Pandas</span>
-      <span class="badge badge-purple">facenet-pytorch</span>
-      <span class="badge badge-cyan">ReportLab</span>
-      <span class="badge badge-green">Matplotlib</span>
-      <span class="badge badge-orange">openpyxl</span>
-      <span class="badge badge-red">win32com</span>
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">// DRILL STOCK CONTROL</span>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#preview">Interface</a></li>
+      <li><a href="#roles">Roles</a></li>
+      <li><a href="#flow">Approval Flow</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#arch">Architecture</a></li>
+    </ul>
+    <div class="nav-status">
+      <div class="nav-dot"></div>
+      PRODUCTION DEPLOYED
     </div>
   </div>
+</nav>
 
-  <!-- STATS -->
-  <div class="stat-row">
-    <div class="stat-box">
-      <span class="stat-num" style="color: var(--blue);">9+</span>
-      <span class="stat-label">modules</span>
-    </div>
-    <div class="stat-box">
-      <span class="stat-num" style="color: var(--green);">5</span>
-      <span class="stat-label">user roles</span>
-    </div>
-    <div class="stat-box">
-      <span class="stat-num" style="color: var(--orange);">2-tier</span>
-      <span class="stat-label">approval flow</span>
-    </div>
-    <div class="stat-box">
-      <span class="stat-num" style="color: var(--purple);">RT</span>
-      <span class="stat-label">file sync</span>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- MOCKUP -->
-  <div class="section-label">preview</div>
-  <div class="section-title">Application Interface</div>
-
-  <div class="mockup-frame">
-    <div class="mockup-bar">
-      <div class="code-dot dot-red"></div>
-      <div class="code-dot dot-yellow"></div>
-      <div class="code-dot dot-green"></div>
-      <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); margin-left: 0.5rem;">Stock Control System — PIC Interface</span>
-    </div>
-    <div class="mockup-inner">
-      <div class="mockup-sidebar">
-        <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--blue); font-weight: 700; padding: 0.2rem 0.4rem;">PE — EMP001</div>
-        <div style="height: 1px; background: var(--border); margin: 0.3rem 0;"></div>
-        <div class="mockup-nav-sep">stock</div>
-        <div class="mockup-nav-item active">📊  Dashboard</div>
-        <div class="mockup-nav-item">📦  Stock Status</div>
-        <div class="mockup-nav-item" style="padding-left: 1rem;">↳  Stock In</div>
-        <div class="mockup-nav-item" style="padding-left: 1rem;">↳  Stock Out</div>
-        <div class="mockup-nav-sep">orders</div>
-        <div class="mockup-nav-item">🛒  Orders</div>
-        <div class="mockup-nav-item" style="padding-left: 1rem;">↳  Order List</div>
-        <div class="mockup-nav-item" style="padding-left: 1rem;">↳  History</div>
-        <div class="mockup-nav-sep">analytics</div>
-        <div class="mockup-nav-item">📈  Monitoring</div>
-      </div>
-      <div class="mockup-content">
-        <div class="mockup-cards">
-          <div class="mockup-card" style="border-left-color: var(--blue);">
-            <div class="mockup-card-num" style="color: var(--blue);">248</div>
-            <div class="mockup-card-label">Total Items</div>
-          </div>
-          <div class="mockup-card" style="border-left-color: var(--red);">
-            <div class="mockup-card-num" style="color: var(--red);">12</div>
-            <div class="mockup-card-label">Low Stock</div>
-          </div>
-          <div class="mockup-card" style="border-left-color: var(--orange);">
-            <div class="mockup-card-num" style="color: var(--orange);">5</div>
-            <div class="mockup-card-label">Awaiting</div>
-          </div>
-          <div class="mockup-card" style="border-left-color: var(--green);">
-            <div class="mockup-card-num" style="color: var(--green);">231</div>
-            <div class="mockup-card-label">OK Stock</div>
-          </div>
-          <div class="mockup-card" style="border-left-color: var(--purple);">
-            <div class="mockup-card-num" style="color: var(--purple);">RM 8.2k</div>
-            <div class="mockup-card-label">Est. Cost</div>
-          </div>
-        </div>
-        <div>
-          <div class="mockup-table-header">
-            <div class="mockup-th">Drill Name</div>
-            <div class="mockup-th">Type</div>
-            <div class="mockup-th">Current Stock</div>
-            <div class="mockup-th">Safety Stock</div>
-            <div class="mockup-th">Status</div>
-          </div>
-          <div class="mockup-row">
-            <div class="mockup-td">ADR-Ø3.0mm-OSG-001</div>
-            <div class="mockup-td">ADR</div>
-            <div class="mockup-td">45</div>
-            <div class="mockup-td">20</div>
-            <div class="mockup-td"><span class="pill pill-green">OK</span></div>
-          </div>
-          <div class="mockup-row">
-            <div class="mockup-td">ENDMILL-Ø6.0mm-MHB</div>
-            <div class="mockup-td">ENDMILL</div>
-            <div class="mockup-td">3</div>
-            <div class="mockup-td">10</div>
-            <div class="mockup-td"><span class="pill pill-red">Low Stock</span></div>
-          </div>
-          <div class="mockup-row">
-            <div class="mockup-td">DRILL-Ø4.5mm-KEN</div>
-            <div class="mockup-td">DRILL</div>
-            <div class="mockup-td">18</div>
-            <div class="mockup-td">15</div>
-            <div class="mockup-td"><span class="pill pill-orange">Awaiting</span></div>
-          </div>
-        </div>
+<header>
+  <div class="header-grid">
+    <div>
+      <div class="header-eyebrow">AI-Powered Inventory Management System</div>
+      <h1>Drill Stock<br/><span>Control</span><br/>System</h1>
+      <div class="header-sub">Face recognition login. 2-tier approval workflow. Real-time stock tracking. Automated Outlook notifications.</div>
+      <div class="header-badges">
+        <span class="badge b-blue">Python 3.x</span>
+        <span class="badge b-blue">PyQt5</span>
+        <span class="badge b-orange">facenet-pytorch</span>
+        <span class="badge b-orange">OpenCV LBPH</span>
+        <span class="badge b-purple">Matplotlib</span>
+        <span class="badge b-green">ReportLab</span>
+        <span class="badge b-cyan">win32com</span>
+        <span class="badge b-green">Production</span>
       </div>
     </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- FEATURES -->
-  <div class="section-label">core features</div>
-  <div class="section-title">What It Does</div>
-
-  <div class="feature-grid">
-    <div class="feature-card blue">
-      <span class="feature-icon">🔐</span>
-      <div class="feature-title">Multi-Role Authentication</div>
-      <div class="feature-desc">Face recognition login for PE members via MTCNN + LBPH. Password-based access for PIC and Approvers. Guest signup with approval workflow.</div>
-    </div>
-    <div class="feature-card green">
-      <span class="feature-icon">📦</span>
-      <div class="feature-title">Real-Time Stock Tracking</div>
-      <div class="feature-desc">Live stock in/out recording. Safety stock alerts with automated low-stock email notifications to PIC and Approver 1.</div>
-    </div>
-    <div class="feature-card orange">
-      <span class="feature-icon">✅</span>
-      <div class="feature-title">2-Tier Approval System</div>
-      <div class="feature-desc">Structured order approval through Approver 1 → Approver 2. Toggle approve/reject per item. Auto PDF report + email summary on final approval.</div>
-    </div>
-    <div class="feature-card purple">
-      <span class="feature-icon">📊</span>
-      <div class="feature-title">Analytics Dashboard</div>
-      <div class="feature-desc">Interactive Matplotlib charts: drill orders by period, cost trends, top-10 usage, type breakdown — with hover tooltips and popup zoom.</div>
-    </div>
-    <div class="feature-card cyan">
-      <span class="feature-icon">🔄</span>
-      <div class="feature-title">Multi-User File Sync</div>
-      <div class="feature-desc">QFileSystemWatcher + 2s polling keeps all open sessions in sync across the network share — no server required.</div>
-    </div>
-    <div class="feature-card red">
-      <span class="feature-icon">📧</span>
-      <div class="feature-title">Outlook Email Automation</div>
-      <div class="feature-desc">Automated notifications via win32com for order submissions, approval decisions, delivery reminders, and guest account approvals.</div>
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      <div class="live-text">System Active</div>
     </div>
   </div>
+</header>
 
-  <div class="divider"></div>
+<div class="stat-bar">
+  <div class="stat-bar-inner">
+    <div class="stat-item">
+      <div class="stat-val blue">9+</div>
+      <div class="stat-label">Modules</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val orange">5</div>
+      <div class="stat-label">User Roles</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val green">2-Tier</div>
+      <div class="stat-label">Approval Flow</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val purple">RT</div>
+      <div class="stat-label">File Sync</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section id="overview">
+    <div class="section-tag">The Problem</div>
+    <h2>Before &<br/>After</h2>
+    <p>A machining facility managing hundreds of cutting tools — drills, endmills, inserts — across multiple operators and approval chains. <strong style="color:var(--text-bright)">Manual logs, no accountability, no automation.</strong></p>
+
+    <div class="impact-grid">
+      <div class="impact-cell impact-header">What Changed</div>
+      <div class="impact-cell impact-header">Before → After</div>
+
+      <div class="impact-cell">
+        <div class="impact-label">Login Method</div>
+      </div>
+      <div class="impact-cell">
+        <span class="impact-before">Shared passwords / no identity</span>
+        <span class="impact-after">Face Recognition (MTCNN + LBPH)</span>
+      </div>
+
+      <div class="impact-cell">
+        <div class="impact-label">Stock Tracking</div>
+      </div>
+      <div class="impact-cell">
+        <span class="impact-before">Manual spreadsheet updates</span>
+        <span class="impact-after">Real-Time Automated Logging</span>
+      </div>
+
+      <div class="impact-cell">
+        <div class="impact-label">Order Approval</div>
+      </div>
+      <div class="impact-cell">
+        <span class="impact-before">Email chain / verbal confirmation</span>
+        <span class="impact-after">Structured 2-Tier Approval System</span>
+      </div>
+
+      <div class="impact-cell">
+        <div class="impact-label">Notifications</div>
+      </div>
+      <div class="impact-cell">
+        <span class="impact-before">Manual follow-ups</span>
+        <span class="impact-after">Automated Outlook Email Triggers</span>
+      </div>
+
+      <div class="impact-cell">
+        <div class="impact-label">Low-Stock Alerts</div>
+      </div>
+      <div class="impact-cell">
+        <span class="impact-before">Discovered when stock runs out</span>
+        <span class="impact-after">Safety Stock Threshold Alerts</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERFACE PREVIEW -->
+  <section id="preview">
+    <div class="section-tag">Interface Preview</div>
+    <h2>Application<br/>Interface</h2>
+    <p>Built with PyQt5. Role-based sidebar navigation. Dashboard shows live stock KPIs at a glance — total items, low-stock alerts, pending approvals, and estimated cost.</p>
+
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="mb-dot" style="background:#F0455A;"></div>
+        <div class="mb-dot" style="background:#F5A623;"></div>
+        <div class="mb-dot" style="background:#00C896;"></div>
+        <span class="mb-title">Stock Control System — PIC Interface</span>
+      </div>
+      <div class="mockup-body">
+        <div class="sidebar">
+          <div class="sb-user">PE — EMP001</div>
+          <div class="sb-section">Stock</div>
+          <div class="sb-item active">📊 &nbsp;Dashboard</div>
+          <div class="sb-item">📦 &nbsp;Stock Status</div>
+          <div class="sb-item sub">↳ &nbsp;Stock In</div>
+          <div class="sb-item sub">↳ &nbsp;Stock Out</div>
+          <div class="sb-section">Orders</div>
+          <div class="sb-item">🛒 &nbsp;Orders</div>
+          <div class="sb-item sub">↳ &nbsp;Order List</div>
+          <div class="sb-item sub">↳ &nbsp;History</div>
+          <div class="sb-section">Analytics</div>
+          <div class="sb-item">📈 &nbsp;Monitoring</div>
+        </div>
+        <div class="content">
+          <div class="kpi-row">
+            <div class="kpi" style="border-left-color:var(--blue);">
+              <div class="kpi-val" style="color:var(--blue);">248</div>
+              <div class="kpi-label">Total Items</div>
+            </div>
+            <div class="kpi" style="border-left-color:var(--red);">
+              <div class="kpi-val" style="color:var(--red);">12</div>
+              <div class="kpi-label">Low Stock</div>
+            </div>
+            <div class="kpi" style="border-left-color:var(--orange);">
+              <div class="kpi-val" style="color:var(--orange);">5</div>
+              <div class="kpi-label">Awaiting</div>
+            </div>
+            <div class="kpi" style="border-left-color:var(--green);">
+              <div class="kpi-val" style="color:var(--green);">231</div>
+              <div class="kpi-label">OK Stock</div>
+            </div>
+            <div class="kpi" style="border-left-color:var(--purple);">
+              <div class="kpi-val" style="color:var(--purple);">8.2k</div>
+              <div class="kpi-label">Est. Cost (RM)</div>
+            </div>
+          </div>
+          <div class="stock-table">
+            <div class="st-header">
+              <div class="st-th">Drill Name</div>
+              <div class="st-th">Type</div>
+              <div class="st-th">Current</div>
+              <div class="st-th">Safety</div>
+              <div class="st-th">Status</div>
+            </div>
+            <div class="st-row">
+              <div class="st-td">ADR-Ø3.0mm-OSG-001</div>
+              <div class="st-td">ADR</div>
+              <div class="st-td">45</div>
+              <div class="st-td">20</div>
+              <div class="st-td"><span class="pill pill-ok">OK</span></div>
+            </div>
+            <div class="st-row">
+              <div class="st-td">ENDMILL-Ø6.0mm-MHB</div>
+              <div class="st-td">ENDMILL</div>
+              <div class="st-td">3</div>
+              <div class="st-td">10</div>
+              <div class="st-td"><span class="pill pill-low">Low Stock</span></div>
+            </div>
+            <div class="st-row">
+              <div class="st-td">DRILL-Ø4.5mm-KEN</div>
+              <div class="st-td">DRILL</div>
+              <div class="st-td">18</div>
+              <div class="st-td">15</div>
+              <div class="st-td"><span class="pill pill-wait">Awaiting</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- USER ROLES -->
-  <div class="section-label">access control</div>
-  <div class="section-title">User Roles</div>
+  <section id="roles">
+    <div class="section-tag">Access Control</div>
+    <h2>User<br/>Roles</h2>
+    <p>Five distinct access tiers, each with a different authentication method and capability set. Face recognition for PE members. Password-based for management roles.</p>
 
-  <div class="role-grid">
-    <div class="role-card">
-      <span class="role-icon">🏭</span>
-      <div class="role-name blue">PIC</div>
-      <ul class="role-items">
-        <li>Manage drill database</li>
-        <li>Stock in & out</li>
-        <li>Submit orders</li>
-        <li>Order history</li>
-        <li>Full analytics</li>
-      </ul>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-tag" style="border-color:rgba(59,139,235,0.4);color:var(--blue);">PIC</div>
+        <h3>Person In Charge</h3>
+        <ul class="role-list">
+          <li style="color:var(--text);">Manage full drill database (add, edit, remove)</li>
+          <li style="color:var(--text);">Record stock-in and stock-out transactions</li>
+          <li style="color:var(--text);">Submit orders for approval</li>
+          <li style="color:var(--text);">View full order history and analytics</li>
+          <li style="color:var(--text);">Receive low-stock and delivery email alerts</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="role-tag" style="border-color:rgba(245,166,35,0.4);color:var(--orange);">APPROVER 1</div>
+        <h3>First Level Approval</h3>
+        <ul class="role-list">
+          <li style="color:var(--text);">Review pending orders, toggle approve / reject per line item</li>
+          <li style="color:var(--text);">Forward approved items to Approver 2 with auto email</li>
+          <li style="color:var(--text);">Manage employee accounts and face enrollment</li>
+          <li style="color:var(--text);">View stock monitoring and analytics</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="role-tag" style="border-color:rgba(168,85,247,0.4);color:var(--purple);">APPROVER 2</div>
+        <h3>Final Authority</h3>
+        <ul class="role-list">
+          <li style="color:var(--text);">Final approval decision on all orders</li>
+          <li style="color:var(--text);">Auto-generate PDF summary on submission</li>
+          <li style="color:var(--text);">Broadcast approval email to all stakeholders</li>
+          <li style="color:var(--text);">View full monitoring dashboard</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="role-tag" style="border-color:rgba(0,200,150,0.4);color:var(--green);">PE MEMBER / USER</div>
+        <h3>Production Engineer</h3>
+        <ul class="role-list">
+          <li style="color:var(--text);">Face scan login via MTCNN + LBPH recognition</li>
+          <li style="color:var(--text);">Stock-out requests only</li>
+          <li style="color:var(--text);">View current stock status</li>
+          <li style="color:var(--text);">Guest signup with Approver 1 review</li>
+        </ul>
+      </div>
     </div>
-    <div class="role-card">
-      <span class="role-icon">✔</span>
-      <div class="role-name orange">Approver 1</div>
-      <ul class="role-items">
-        <li>Review pending orders</li>
-        <li>Approve / reject items</li>
-        <li>Notify Approver 2</li>
-        <li>Manage employees</li>
-        <li>View monitoring</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <span class="role-icon">✔✔</span>
-      <div class="role-name purple">Approver 2</div>
-      <ul class="role-items">
-        <li>Final approval authority</li>
-        <li>Generate PDF reports</li>
-        <li>Broadcast summary email</li>
-        <li>View monitoring</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <span class="role-icon">👤</span>
-      <div class="role-name green">PE Member / User</div>
-      <ul class="role-items">
-        <li>Face scan login</li>
-        <li>Stock out only</li>
-        <li>Stock status view</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="divider"></div>
+  </section>
 
   <!-- APPROVAL FLOW -->
-  <div class="section-label">workflow</div>
-  <div class="section-title">Order Approval Flow</div>
+  <section id="flow">
+    <div class="section-tag">Workflow</div>
+    <h2>Order Approval<br/>Flow</h2>
+    <p>A structured, four-step cycle from low-stock identification to delivery logging. Every step triggers an automated Outlook email. <span style="color:var(--blue);">No manual follow-ups needed.</span></p>
 
-  <div class="flow-steps">
-    <div class="flow-step">
-      <div class="step-num">01</div>
-      <div class="step-content">
-        <div class="step-title">PIC identifies low stock & submits order</div>
-        <div class="step-desc">OrderManagement page flags items below safety stock. PIC sets quantities, checks items, and submits — generating an Order ID and emailing Approver 1.</div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">PIC Identifies Low Stock &amp; Submits Order</div>
+          <div class="step-desc">OrderManagement page flags items below safety stock threshold. PIC sets order quantities, checks items, and submits — generating an Order ID and emailing Approver 1 automatically.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Approver 1 Reviews Per Line Item</div>
+          <div class="step-desc">Toggle approve/reject on each order item individually. Approved items advance to Approver 2 with an automated email notification. Rejected items logged with reason.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Approver 2 — Final Decision</div>
+          <div class="step-desc">Final authority. On submission, auto-generates a PDF approval summary and emails all stakeholders — PIC, Approver 1, and Approver 2 — simultaneously via Outlook.</div>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">PIC Records Delivery, Stock Auto-Updates</div>
+          <div class="step-desc">Order History shows approved orders awaiting delivery. Recording a delivery auto-increments current stock level and logs the transaction with timestamp and quantity.</div>
+        </div>
       </div>
     </div>
-    <div class="flow-step">
-      <div class="step-num">02</div>
-      <div class="step-content">
-        <div class="step-title">Approver 1 reviews & approves per line item</div>
-        <div class="step-desc">Toggle approve/reject on each item individually. Approved items advance to Approver 2 with an automated email notification.</div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-tag">Core Features</div>
+    <h2>What It<br/>Does</h2>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Face Recognition Login</h3>
+        <p>PE members authenticate via face scan using MTCNN detection (facenet-pytorch) and LBPH recognition (OpenCV). Faces enrolled and retrained per employee — no passwords required for operators.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3>Real-Time Stock Tracking</h3>
+        <p>Live stock-in / stock-out recording with safety stock comparison. Items below threshold trigger automated low-stock email alerts to PIC and Approver 1 via win32com Outlook integration.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✅</div>
+        <h3>2-Tier Approval System</h3>
+        <p>Structured order approval through Approver 1 → Approver 2. Toggle approve/reject per line item. Auto PDF report + email summary on final approval. Full audit trail maintained.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Analytics Dashboard</h3>
+        <p>Interactive Matplotlib charts: drill orders by period, cost trends, top-10 usage, type breakdown. Hover tooltips and popup zoom for deeper inspection. Filter by custom date ranges.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Multi-User File Sync</h3>
+        <p>QFileSystemWatcher + 2-second polling keeps all open sessions in sync across the network share. Multiple users can operate simultaneously — no server, no database required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📧</div>
+        <h3>Outlook Email Automation</h3>
+        <p>Automated notifications via win32com for every workflow event: order submissions, approval decisions, delivery reminders, low-stock alerts, and guest account approvals.</p>
       </div>
     </div>
-    <div class="flow-step">
-      <div class="step-num">03</div>
-      <div class="step-content">
-        <div class="step-title">Approver 2 gives final decision</div>
-        <div class="step-desc">Final authority. On submission, auto-generates a PDF summary and emails all stakeholders (PIC, Approver 1, Approver 2).</div>
-      </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="arch">
+    <div class="section-tag">Architecture</div>
+    <h2>How It's<br/>Built</h2>
+    <p>Layered architecture — UI, business logic, and data access are cleanly separated. Face data, Excel workbooks, and PDF output all live on a shared network path for multi-user access.</p>
+
+    <pre class="tree"><span class="t-dir">CODE/</span>
+├── <span class="t-dir">src/</span>
+│   ├── <span class="t-dir">ui/</span>
+│   │   ├── <span class="t-key">gui.py</span>          <span class="t-cmt">— main window · login · role routing</span>
+│   │   ├── <span class="t-key">pic.py</span>          <span class="t-cmt">— PIC: dashboard · stock · orders · analytics</span>
+│   │   ├── <span class="t-key">user.py</span>         <span class="t-cmt">— PE member: stock out & status view</span>
+│   │   └── <span class="t-file">sidebar_gui.py</span>  <span class="t-cmt">— shared sidebar window base class</span>
+│   └── <span class="t-dir">Function/</span>
+│       ├── <span class="t-key">approval.py</span>     <span class="t-cmt">— 2-tier approval dashboard + pages</span>
+│       ├── <span class="t-key">face_enroll.py</span>  <span class="t-cmt">— face capture · MTCNN · LBPH training</span>
+│       ├── <span class="t-key">stock_utils.py</span>  <span class="t-cmt">— Excel I/O · safe write · data readers</span>
+│       ├── <span class="t-key">sync_manager.py</span> <span class="t-cmt">— QFileSystemWatcher + poll-based sync</span>
+│       ├── <span class="t-file">pdf.py</span>          <span class="t-cmt">— ReportLab approval PDF generator</span>
+│       └── <span class="t-file">mail.py</span>         <span class="t-cmt">— Outlook automation via win32com</span>
+├── <span class="t-file">main.py</span>             <span class="t-cmt">— entry point</span>
+└── <span class="t-dir">_internal/DATA/</span>
+    ├── <span class="t-file">Database_V2.xlsx</span>
+    ├── <span class="t-file">Orders.xlsx</span>
+    ├── <span class="t-file">Namelist.xlsx</span>
+    ├── <span class="t-file">Stocks.xlsx</span>
+    └── <span class="t-dir">Faces/</span>             <span class="t-cmt">— enrolled images + trainer.yml</span></pre>
+
+    <div class="section-tag" style="margin-top:40px;">Tech Stack</div>
+    <div class="tech-list">
+      <div class="tech-item"><span class="tech-cat">UI Framework</span><span class="tech-name">PyQt5</span></div>
+      <div class="tech-item"><span class="tech-cat">Face Detection</span><span class="tech-name">facenet-pytorch (MTCNN)</span></div>
+      <div class="tech-item"><span class="tech-cat">Face Recognition</span><span class="tech-name">OpenCV LBPH</span></div>
+      <div class="tech-item"><span class="tech-cat">Analytics Charts</span><span class="tech-name">Matplotlib</span></div>
+      <div class="tech-item"><span class="tech-cat">Data Processing</span><span class="tech-name">Pandas</span></div>
+      <div class="tech-item"><span class="tech-cat">PDF Generation</span><span class="tech-name">ReportLab</span></div>
+      <div class="tech-item"><span class="tech-cat">Email Automation</span><span class="tech-name">win32com (Outlook)</span></div>
+      <div class="tech-item"><span class="tech-cat">Data Store</span><span class="tech-name">openpyxl</span></div>
     </div>
-    <div class="flow-step">
-      <div class="step-num">04</div>
-      <div class="step-content">
-        <div class="step-title">PIC records delivery & updates stock</div>
-        <div class="step-desc">Order History page shows approved orders awaiting delivery. Recording a delivery auto-increments current stock and logs the transaction.</div>
-      </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-title">// DRILL STOCK</div>
+    <div class="footer-sub">AI-Powered Inventory · Built for Real Facilities</div>
+    <div class="footer-links">
+      <a href="https://github.com/qaisaraM/STOCK-CONTROL-SYSTEM" target="_blank">GitHub</a>
+      <a href="https://qaisaram.github.io/STOCK-CONTROL-SYSTEM/" target="_blank">Live Demo</a>
+      <a href="https://linkedin.com/in/qaisara-mardhiah" target="_blank">LinkedIn</a>
     </div>
+    <div class="footer-copy">PyQt5 · facenet-pytorch · OpenCV · Matplotlib · ReportLab · win32com</div>
   </div>
+</footer>
 
-  <div class="divider"></div>
+<script>
+  const sections = document.querySelectorAll('section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  sections.forEach(s => observer.observe(s));
 
-  <!-- TECH STACK -->
-  <div class="section-label">tech stack</div>
-  <div class="section-title">Built With</div>
-
-  <div class="tech-grid">
-    <div class="tech-item">
-      <span class="tech-emoji">🖥</span>
-      <div class="tech-info">
-        <span class="tech-name">PyQt5</span>
-        <span class="tech-use">Desktop UI framework</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">🧠</span>
-      <div class="tech-info">
-        <span class="tech-name">facenet-pytorch</span>
-        <span class="tech-use">Face detection (MTCNN)</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">👁</span>
-      <div class="tech-info">
-        <span class="tech-name">OpenCV</span>
-        <span class="tech-use">Face recognition (LBPH)</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">📊</span>
-      <div class="tech-info">
-        <span class="tech-name">Matplotlib</span>
-        <span class="tech-use">Analytics charts</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">🐼</span>
-      <div class="tech-info">
-        <span class="tech-name">Pandas</span>
-        <span class="tech-use">Data processing</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">📑</span>
-      <div class="tech-info">
-        <span class="tech-name">ReportLab</span>
-        <span class="tech-use">PDF generation</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">📬</span>
-      <div class="tech-info">
-        <span class="tech-name">win32com</span>
-        <span class="tech-use">Outlook email automation</span>
-      </div>
-    </div>
-    <div class="tech-item">
-      <span class="tech-emoji">📁</span>
-      <div class="tech-info">
-        <span class="tech-name">openpyxl</span>
-        <span class="tech-use">Excel read/write</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- PROJECT STRUCTURE -->
-  <div class="section-label">project structure</div>
-  <div class="section-title">Repository Layout</div>
-
-  <div class="code-block">
-    <div class="code-header">
-      <div class="code-dots">
-        <div class="code-dot dot-red"></div>
-        <div class="code-dot dot-yellow"></div>
-        <div class="code-dot dot-green"></div>
-      </div>
-      <span class="code-title">project tree</span>
-    </div>
-    <div class="code-body">
-<div class="tree">
-<span class="tree-dir">CODE/</span>
-├── <span class="tree-dir">src/</span>
-│   ├── <span class="tree-dir">ui/</span>
-│   │   ├── <span class="tree-file">gui.py</span>          <span class="tree-comment">— main window, login screens, role routing</span>
-│   │   ├── <span class="tree-file">pic.py</span>          <span class="tree-comment">— PIC interface: dashboard, stock, orders, monitoring</span>
-│   │   ├── <span class="tree-file">user.py</span>         <span class="tree-comment">— PE member interface: stock out & status</span>
-│   │   └── <span class="tree-file">sidebar_gui.py</span>  <span class="tree-comment">— shared sidebar window base class</span>
-│   └── <span class="tree-dir">Function/</span>
-│       ├── <span class="tree-file">approval.py</span>     <span class="tree-comment">— 2-tier approval dashboard + pages</span>
-│       ├── <span class="tree-file">face_enroll.py</span>  <span class="tree-comment">— face capture, MTCNN detection, LBPH training</span>
-│       ├── <span class="tree-file">stock_utils.py</span>  <span class="tree-comment">— Excel I/O, safe write, data readers</span>
-│       ├── <span class="tree-file">sync_manager.py</span> <span class="tree-comment">— QFileSystemWatcher + poll-based multi-user sync</span>
-│       ├── <span class="tree-file">pdf.py</span>          <span class="tree-comment">— ReportLab approval PDF generator</span>
-│       └── <span class="tree-file">mail.py</span>         <span class="tree-comment">— Outlook automation via win32com</span>
-├── <span class="tree-file">main.py</span>             <span class="tree-comment">— entry point</span>
-└── <span class="tree-dir">_internal/DATA/</span>
-    ├── <span class="tree-file">Database_V2.xlsx</span>
-    ├── <span class="tree-file">Orders.xlsx</span>
-    ├── <span class="tree-file">Namelist.xlsx</span>
-    ├── <span class="tree-file">Stocks.xlsx</span>
-    └── <span class="tree-dir">Faces/</span>             <span class="tree-comment">— enrolled face images + trainer.yml</span>
-</div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- FOOTER -->
-  <div class="footer">
-    <p class="footer-text">built with <span class="highlight">PyQt5</span> · <span class="highlight">OpenCV</span> · <span class="highlight">facenet-pytorch</span> · <span class="highlight">pandas</span></p>
-    <p class="footer-text" style="margin-top: 0.4rem; color: var(--muted);">Production Inventory Management System · QaisaraM</p>
-  </div>
-
-</div>
+  document.querySelectorAll('.pipeline-step').forEach((step, i) => {
+    step.style.transitionDelay = `${i * 80}ms`;
+  });
+</script>
 </body>
 </html>
